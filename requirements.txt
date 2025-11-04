@@ -1,1 +1,1 @@
-# Python依赖包列表# 核心依赖：# - 向量化和检索# - LLM调用# - 数据处理# - 配置管理
+# Python依赖包列表# 核心依赖：# - 向量化和检索# - LLM调用# - 数据处理# - 配置管理sentence-transformers>=2.2.0torch>=2.0.0numpy>=1.24.0faiss-cpu>=1.7.4PyYAML>=6.0python-dotenv>=1.0.0openai>=1.0.0langchain>=0.1.0langchain-openai>=0.0.5
