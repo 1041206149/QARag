@@ -1,0 +1,1 @@
+# 文本向量化模块# 功能：# - 文本向量化(使用sentence-transformers或OpenAI embedding)# - 支持中文语义编码# - 缓存embedding结果
