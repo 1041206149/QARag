@@ -1,1 +1,72 @@
-# Python__pycache__/*.py[cod]*$py.class*.so.Pythonbuild/develop-eggs/dist/downloads/eggs/.eggs/lib/lib64/parts/sdist/var/wheels/*.egg-info/.installed.cfg*.egg# Virtual Environmentvenv/env/ENV/# IDE.vscode/.idea/*.swp*.swo# 项目特定.envlogs/*.logdata/processed/*vector_store/faiss_index/*!vector_store/faiss_index/.gitkeep!data/processed/.gitkeep# Jupyter Notebook.ipynb_checkpoints# 模型文件*.bin*.pkl*.h5
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+
+# 环境变量
+.env
+
+# 日志文件
+logs/
+*.log
+
+# 数据和缓存文件
+data/processed/*.pkl
+data/processed/*.npz
+vector_store/faiss_index/*.index
+vector_store/faiss_index/*.pkl
+vector_store/faiss_index/*.bin
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# 模型文件（下载的预训练模型）
+*.bin
+*.h5
+*.onnx
+*.pt
+*.pth
+
+# 测试覆盖率
+.coverage
+htmlcov/
+.pytest_cache/
