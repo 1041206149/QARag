@@ -4,26 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9898c470-7882-463f-b39b-e5ab7cd90150" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="9898c470-7882-463f-b39b-e5ab7cd90150" name="更改" comment="简化重构项目">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/REFACTORING_REPORT.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/REFACTORING_REPORT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/REFACTORING_SUMMARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/REFACTORING_SUMMARY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/USAGE_COMPARISON.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/USAGE_COMPARISON.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/processed/.gitkeep" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/.gitkeep" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/demo.ipynb" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_data_loader.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_embedding.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_llm_client.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_pipeline.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_retriever.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_store/faiss_index/.gitkeep" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/借贷APP用户画像数仓设计方案.md" beforeDir="false" afterPath="$PROJECT_DIR$/doc/借贷APP用户画像数仓设计方案.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/embedding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/embedding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/llm_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/llm_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/rag_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/rag_pipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/retriever.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/retriever.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,8 +126,17 @@
       <workItem from="1762400512463" duration="2327000" />
       <workItem from="1762417741875" duration="12084000" />
       <workItem from="1763366388336" duration="2730000" />
-      <workItem from="1764404411484" duration="3669000" />
+      <workItem from="1764404411484" duration="7782000" />
     </task>
+    <task id="LOCAL-00001" summary="简化重构项目">
+      <option name="closed" value="true" />
+      <created>1764408206379</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1764408206379</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -156,13 +153,17 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="简化重构项目" />
+    <option name="LAST_COMMIT_MESSAGE" value="简化重构项目" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/rag$run_tests.coverage" NAME="run_tests 覆盖结果" MODIFIED="1762238774422" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/rag$llm_client.coverage" NAME="llm_client 覆盖结果" MODIFIED="1762238722695" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/rag$embedding.coverage" NAME="embedding 覆盖结果" MODIFIED="1762238714116" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/rag$test_pipeline.coverage" NAME="test_pipeline 覆盖结果" MODIFIED="1762250731924" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/rag$test_data_loader.coverage" NAME="test_data_loader 覆盖结果" MODIFIED="1762238944292" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/QARag$main.coverage" NAME="main 覆盖结果" MODIFIED="1764404560007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QARag$main.coverage" NAME="main 覆盖结果" MODIFIED="1764408275956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/QARag$test_all.coverage" NAME="test_all 覆盖结果" MODIFIED="1764408070831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/rag$test_llm_client.coverage" NAME="test_llm_client 覆盖结果" MODIFIED="1762250694402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/rag$rag_pipeline.coverage" NAME="rag_pipeline 覆盖结果" MODIFIED="1762250844902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />

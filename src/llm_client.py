@@ -1,1 +1,217 @@
-# LLM API调用模块# 功能：# - 测试基本LLM调用（支持非流式和流式）是否正常运作# - LLM API封装(支持OpenAI/Claude/本地模型)# - 请求重试机制# - Token使用统计import loggingfrom typing import List, Dict, Any, Optional, Generatorfrom openai import OpenAIfrom dotenv import load_dotenvimport os# 加载环境变量load_dotenv()logger = logging.getLogger(__name__)class LLMClient:    """LLM客户端封装"""    def __init__(        self,        model: str = None,        api_key: str = None,        base_url: str = None,        temperature: float = None    ):        """        初始化LLM客户端        Args:            model: 模型名称            api_key: API密钥            base_url: API基础URL            temperature: 温度参数        """        self.model = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")        self.api_key = api_key or os.getenv("OPENAI_API_KEY")        self.base_url = base_url or os.getenv("OPENAI_API_BASE")        self.temperature = temperature if temperature is not None else float(os.getenv("OPENAI_TEMPERATURE", 1))        # 初始化OpenAI客户端        self.client = OpenAI(            api_key=self.api_key,            base_url=self.base_url        )        logger.info(f"LLM客户端初始化完成，模型: {self.model}")    def generate(        self,        prompt: str,        system_prompt: Optional[str] = None,        max_tokens: Optional[int] = None,        stream: bool = False    ) -> str:        """        生成回复（非流式）        Args:            prompt: 用户提示词            system_prompt: 系统提示词            max_tokens: 最大token数            stream: 是否流式输出        Returns:            生成的文本        """        try:            messages = [                {"role": "system", "content": system_prompt},                {"role": "user", "content": prompt}            ]            logger.info(f"正在调用LLM生成回复...")            response = self.client.chat.completions.create(                model=self.model,                messages=messages,                temperature=self.temperature,                max_tokens=max_tokens,                stream=stream            )            if stream:                return self._handle_stream(response)            else:                answer = response.choices[0].message.content                logger.info(f"LLM回复生成完成，长度: {len(answer)} 字符")                return answer        except Exception as e:            logger.error(f"LLM调用失败: {e}")            raise    def generate_stream(        self,        prompt: str,        system_prompt: str = "你是一个专业的AI助手，能够准确回答问题。",        max_tokens: int = 1000    ) -> Generator[str, None, None]:        """        生成回复（流式）        Args:            prompt: 用户提示词            system_prompt: 系统提示词            max_tokens: 最大token数        Yields:            生成的文本片段        """        try:            messages = [                {"role": "system", "content": system_prompt},                {"role": "user", "content": prompt}            ]            logger.info(f"正在调用LLM生成回复（流式）...")            response = self.client.chat.completions.create(                model=self.model,                messages=messages,                temperature=self.temperature,                max_tokens=max_tokens,                stream=True            )            for chunk in response:                # 添加边界检查                if chunk.choices and len(chunk.choices) > 0:                    if chunk.choices[0].delta.content is not None:                        yield chunk.choices[0].delta.content        except Exception as e:            logger.error(f"LLM流式调用失败: {e}")            raise    def _handle_stream(self, response) -> str:        """处理流式响应"""        full_response = ""        for chunk in response:            # 添加边界检查            if chunk.choices and len(chunk.choices) > 0:                if chunk.choices[0].delta.content is not None:                    content = chunk.choices[0].delta.content                    full_response += content                    print(content, end="", flush=True)        print()  # 换行        return full_response    def generate_with_context(        self,        question: str,        context: List[Dict[str, Any]],        system_prompt: str = None,        max_tokens: int = 1000    ) -> str:        """        基于检索到的上下文生成回复        Args:            question: 用户问题            context: 检索到的相关文档列表            system_prompt: 系统提示词            max_tokens: 最大token数        Returns:            生成的回答        """        # 构建上下文文本        context_text = self._format_context(context)        # 构建提示词        prompt = self._build_rag_prompt(question, context_text)        # 使用默认系统提示词        if system_prompt is None:            system_prompt = """你是一个专业的AI助手。请根据提供的参考信息准确回答用户的问题。如果参考信息中没有相关内容，请明确告知用户。回答要简洁、准确、有条理。"""        return self.generate(            prompt=prompt,            system_prompt=system_prompt,            max_tokens=max_tokens        )    def _format_context(self, context: List[Dict[str, Any]]) -> str:        """        格式化上下文文档        Args:            context: 检索到的文档列表        Returns:            格式化后的上下文文本        """        context_parts = []        for i, doc in enumerate(context, 1):            qa_pair = doc['qa_pair']            similarity = doc['similarity']            context_part = f"""【参考{i}】(相似度: {similarity:.3f})问题: {qa_pair['question']}答案: {qa_pair['answer']}"""            context_parts.append(context_part.strip())        return "\n\n".join(context_parts)    def _build_rag_prompt(self, question: str, context: str) -> str:        """        构建RAG提示词        Args:            question: 用户问题            context: 上下文文本        Returns:            完整的提示词        """        prompt = f"""请根据以下参考信息回答用户的问题。=== 参考信息 ==={context}=== 用户问题 ==={question}=== 回答要求 ===1. 优先使用参考信息中的内容回答2. 如果参考信息不足，可以补充合理的推断，但要明确说明3. 保持回答简洁、准确、有条理4. 如果参考信息完全不相关，请明确告知用户请回答："""        return prompt
+"""
+LLM API调用模块 - 使用 LangChain
+
+功能：
+- 使用 LangChain 的 ChatOpenAI
+- 支持流式和非流式输出
+- 集成 Prompt 模板
+"""
+import logging
+from typing import List, Dict, Any, Optional, Generator
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
+from config.config_manager import config
+from config.prompt_templates import SYSTEM_PROMPT, RAG_PROMPT_TEMPLATE, CONTEXT_TEMPLATE
+
+logger = logging.getLogger(__name__)
+
+
+class LLMClient:
+    """LLM客户端封装 - LangChain 实现"""
+
+    def __init__(
+        self,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+        temperature: Optional[float] = None
+    ):
+        """
+        初始化LLM客户端
+
+        Args:
+            model: 模型名称
+            api_key: API密钥
+            base_url: API基础URL
+            temperature: 温度参数
+        """
+        llm_config = config.llm_config
+
+        self.model = model or llm_config.get('model')
+        self.api_key = api_key or llm_config.get('api_key')
+        self.base_url = base_url or llm_config.get('base_url')
+        self.temperature = temperature if temperature is not None else llm_config.get('temperature', 1.0)
+
+        # 初始化 LangChain ChatOpenAI
+        self.llm = ChatOpenAI(
+            model=self.model,
+            openai_api_key=self.api_key,
+            openai_api_base=self.base_url,
+            temperature=self.temperature,
+            streaming=False
+        )
+
+        # 流式 LLM
+        self.llm_stream = ChatOpenAI(
+            model=self.model,
+            openai_api_key=self.api_key,
+            openai_api_base=self.base_url,
+            temperature=self.temperature,
+            streaming=True
+        )
+
+        logger.info(f"✅ LLM客户端初始化完成，模型: {self.model}")
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None
+    ) -> str:
+        """
+        生成回复（非流式）
+
+        Args:
+            prompt: 用户提示词
+            system_prompt: 系统提示词
+            max_tokens: 最大token数
+
+        Returns:
+            生成的文本
+        """
+        try:
+            messages = []
+
+            if system_prompt:
+                messages.append(SystemMessage(content=system_prompt))
+
+            messages.append(HumanMessage(content=prompt))
+
+            logger.info(f"正在调用LLM生成回复...")
+
+            # 使用 LangChain 调用
+            response = self.llm.invoke(messages)
+            answer = response.content
+
+            logger.info(f"✅ LLM回复生成完成，长度: {len(answer)} 字符")
+            return answer
+
+        except Exception as e:
+            logger.error(f"❌ LLM调用失败: {e}")
+            raise
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None
+    ) -> Generator[str, None, None]:
+        """
+        生成回复（流式）
+
+        Args:
+            prompt: 用户提示词
+            system_prompt: 系统提示词
+            max_tokens: 最大token数
+
+        Yields:
+            生成的文本片段
+        """
+        try:
+            messages = []
+
+            if system_prompt:
+                messages.append(SystemMessage(content=system_prompt))
+
+            messages.append(HumanMessage(content=prompt))
+
+            logger.info(f"正在调用LLM生成回复（流式）...")
+
+            # 使用 LangChain 流式调用
+            for chunk in self.llm_stream.stream(messages):
+                if chunk.content:
+                    yield chunk.content
+
+        except Exception as e:
+            logger.error(f"❌ LLM流式调用失败: {e}")
+            raise
+
+    def generate_with_context(
+        self,
+        question: str,
+        context: List[Dict[str, Any]],
+        system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None
+    ) -> str:
+        """
+        基于检索到的上下文生成回复
+
+        Args:
+            question: 用户问题
+            context: 检索到的相关文档列表
+            system_prompt: 系统提示词
+            max_tokens: 最大token数
+
+        Returns:
+            生成的回答
+        """
+        # 构建上下文文本
+        context_text = self._format_context(context)
+
+        # 构建提示词
+        prompt = self._build_rag_prompt(question, context_text)
+
+        # 使用默认系统提示词
+        if system_prompt is None:
+            system_prompt = SYSTEM_PROMPT
+
+        return self.generate(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens
+        )
+
+    def _format_context(self, context: List[Dict[str, Any]]) -> str:
+        """
+        格式化上下文文档
+
+        Args:
+            context: 检索到的文档列表
+
+        Returns:
+            格式化后的上下文文本
+        """
+        context_parts = []
+        for i, doc in enumerate(context, 1):
+            qa_pair = doc['qa_pair']
+            similarity = doc['similarity']
+
+            # 使用配置的模板
+            context_part = CONTEXT_TEMPLATE.format(
+                index=i,
+                similarity=similarity,
+                question=qa_pair['question'],
+                answer=qa_pair['answer']
+            )
+            context_parts.append(context_part.strip())
+
+        return "\n\n".join(context_parts)
+
+    def _build_rag_prompt(self, question: str, context: str) -> str:
+        """
+        构建RAG提示词
+
+        Args:
+            question: 用户问题
+            context: 上下文文本
+
+        Returns:
+            完整的提示词
+        """
+        # 使用配置的 RAG 模板
+        prompt = RAG_PROMPT_TEMPLATE.format(
+            context=context,
+            question=question
+        )
+        return prompt
