@@ -4,14 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9898c470-7882-463f-b39b-e5ab7cd90150" name="更改" comment="简化重构项目">
+    <list default="true" id="9898c470-7882-463f-b39b-e5ab7cd90150" name="更改" comment="使用langchain框架">
+      <change afterPath="$PROJECT_DIR$/src/reranker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_all.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/embedding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/embedding.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/llm_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/llm_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/rag_pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/rag_pipeline.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/retriever.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/retriever.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,12 +26,12 @@
     &quot;assignee&quot;: &quot;1041206149&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/1041206149/QARag.git",
-    "accountId": "56972e3b-370c-475b-bc5b-89080dc0bdd4"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/1041206149/QARag.git&quot;,
+    &quot;accountId&quot;: &quot;56972e3b-370c-475b-bc5b-89080dc0bdd4&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -41,35 +40,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.data_loader.executor": "Run",
-    "Python.embedding.executor": "Run",
-    "Python.llm_client.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.rag_pipeline.executor": "Run",
-    "Python.retriever.executor": "Run",
-    "Python.run_tests.executor": "Run",
-    "Python.test_all.executor": "Run",
-    "Python.test_data_loader.executor": "Run",
-    "Python.test_embedding.executor": "Run",
-    "Python.test_llm_client.executor": "Run",
-    "Python.test_pipeline.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/brown/Projects/QARag",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.black.configuration.BlackFormatterConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.data_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.embedding.executor&quot;: &quot;Run&quot;,
+    &quot;Python.llm_client.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.rag_pipeline.executor&quot;: &quot;Run&quot;,
+    &quot;Python.retriever.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_all.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_data_loader.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_embedding.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_llm_client.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_pipeline.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/brown/Projects/QARag&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.black.configuration.BlackFormatterConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\project\rag\data\raw" />
@@ -126,7 +125,9 @@
       <workItem from="1762400512463" duration="2327000" />
       <workItem from="1762417741875" duration="12084000" />
       <workItem from="1763366388336" duration="2730000" />
-      <workItem from="1764404411484" duration="7782000" />
+      <workItem from="1764404411484" duration="17490000" />
+      <workItem from="1764503181235" duration="2000" />
+      <workItem from="1764566237052" duration="505000" />
     </task>
     <task id="LOCAL-00001" summary="简化重构项目">
       <option name="closed" value="true" />
@@ -136,7 +137,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764408206379</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="使用langchain框架">
+      <option name="closed" value="true" />
+      <created>1764430367628</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1764430367628</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,7 +164,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="简化重构项目" />
-    <option name="LAST_COMMIT_MESSAGE" value="简化重构项目" />
+    <MESSAGE value="使用langchain框架" />
+    <option name="LAST_COMMIT_MESSAGE" value="使用langchain框架" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/rag$run_tests.coverage" NAME="run_tests 覆盖结果" MODIFIED="1762238774422" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -163,7 +173,7 @@
     <SUITE FILE_PATH="coverage/rag$embedding.coverage" NAME="embedding 覆盖结果" MODIFIED="1762238714116" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/rag$test_pipeline.coverage" NAME="test_pipeline 覆盖结果" MODIFIED="1762250731924" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/rag$test_data_loader.coverage" NAME="test_data_loader 覆盖结果" MODIFIED="1762238944292" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/QARag$main.coverage" NAME="main 覆盖结果" MODIFIED="1764408275956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/QARag$main.coverage" NAME="main 覆盖结果" MODIFIED="1764485529987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/QARag$test_all.coverage" NAME="test_all 覆盖结果" MODIFIED="1764408070831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/rag$test_llm_client.coverage" NAME="test_llm_client 覆盖结果" MODIFIED="1762250694402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/rag$rag_pipeline.coverage" NAME="rag_pipeline 覆盖结果" MODIFIED="1762250844902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />

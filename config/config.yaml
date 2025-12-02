@@ -1,1 +1,49 @@
-# RAG系统配置文件# 数据配置data:  raw_data_path: "data/raw/qa_pairs_rag.json"  processed_data_path: "data/processed"# 向量化配置embedding:  model_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"  batch_size: 32  cache_dir: "data/processed"# 向量数据库配置vector_store:  type: "faiss"  index_path: "vector_store/faiss_index"  index_type: "flat"  # flat, ivf, hnsw# 检索配置retrieval:  top_k: 3  similarity_threshold: 0.7  use_cache: true# LLM配置llm:  provider: "openai"  # openai, anthropic, local  model: "gpt-4o-mini"  temperature: 1.0  max_tokens: 1000  timeout: 30# 日志配置logging:  level: "INFO"  # DEBUG, INFO, WARNING, ERROR  file: "logs/app.log"  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"# 系统配置system:  cache_enabled: true  parallel_processing: false  max_workers: 4
+# RAG系统配置文件
+
+# 数据配置
+data:
+  raw_data_path: "data/raw/qa_pairs_rag.json"
+  processed_data_path: "data/processed"
+
+# 向量化配置
+embedding:
+  model_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  batch_size: 32
+  cache_dir: "data/processed"
+
+# 向量数据库配置
+vector_store:
+  type: "faiss"
+  index_path: "vector_store/faiss_index"
+  index_type: "flat"  # flat, ivf, hnsw
+
+# 检索配置
+retrieval:
+  top_k: 5  # 初始检索数量（重排序前）
+  similarity_threshold: 0.7
+  use_cache: true
+  # 重排序配置
+  rerank:
+    enabled: true
+    strategy: "cross_encoder"  # similarity, diversity, mmr, cross_encoder
+    top_k: 3  # 重排序后返回的文档数量
+
+# LLM配置
+llm:
+  provider: "openai"  # openai, anthropic, local
+  model: "gpt-4o-mini"
+  temperature: 1.0
+  max_tokens: 1000
+  timeout: 30
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/app.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# 系统配置
+system:
+  cache_enabled: true
+  parallel_processing: false
+  max_workers: 4

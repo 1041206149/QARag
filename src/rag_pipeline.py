@@ -17,6 +17,7 @@ from src.data_loader import QADataLoader
 from src.embedding import EmbeddingModel
 from src.retriever import VectorRetriever
 from src.llm_client import LLMClient
+from src.reranker import Reranker
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +47,15 @@ class RAGPipeline:
         retrieval_config = config.retrieval_config
 
         self.data_path = data_path
-        self.top_k = top_k if top_k is not None else retrieval_config.get('top_k', 3)
+        self.top_k = top_k if top_k is not None else retrieval_config.get('top_k', 5)
         self.similarity_threshold = similarity_threshold if similarity_threshold is not None else retrieval_config.get('similarity_threshold', 0.7)
         self.use_cache = use_cache if use_cache is not None else retrieval_config.get('use_cache', True)
+
+        # 重排序配置
+        rerank_config = retrieval_config.get('rerank', {})
+        self.rerank_enabled = rerank_config.get('enabled', False)
+        self.rerank_strategy = rerank_config.get('strategy', 'mmr')
+        self.rerank_top_k = rerank_config.get('top_k', 3)
 
         # 初始化组件
         logger.info("正在初始化RAG Pipeline...")
@@ -56,6 +63,14 @@ class RAGPipeline:
         self.embedding_model = EmbeddingModel(embedding_model_name)
         self.retriever = VectorRetriever(embedding_model=self.embedding_model)
         self.llm_client = LLMClient()
+
+        # 初始化重排序器
+        if self.rerank_enabled:
+            self.reranker = Reranker(strategy=self.rerank_strategy)
+            logger.info(f"✅ 重排序已启用，策略: {self.rerank_strategy}")
+        else:
+            self.reranker = None
+            logger.info("重排序未启用")
 
         self._initialized = False
         self.rag_chain = None
@@ -142,6 +157,16 @@ class RAGPipeline:
                 if doc['similarity'] >= self.similarity_threshold
             ]
 
+            # 重排序
+            if self.rerank_enabled and self.reranker and filtered_docs:
+                logger.info(f"正在重排序，策略: {self.rerank_strategy}")
+                filtered_docs = self.reranker.rerank(
+                    query=question,
+                    documents=filtered_docs,
+                    top_k=self.rerank_top_k
+                )
+                logger.info(f"重排序后文档数量: {len(filtered_docs)}")
+
             if not filtered_docs:
                 logger.warning("未找到相似度足够高的文档")
                 if retrieved_docs:
@@ -210,6 +235,15 @@ class RAGPipeline:
                 doc for doc in retrieved_docs
                 if doc['similarity'] >= self.similarity_threshold
             ]
+
+            # 重排序
+            if self.rerank_enabled and self.reranker and filtered_docs:
+                logger.info(f"正在重排序，策略: {self.rerank_strategy}")
+                filtered_docs = self.reranker.rerank(
+                    query=question,
+                    documents=filtered_docs,
+                    top_k=self.rerank_top_k
+                )
 
             if not filtered_docs:
                 yield "抱歉，我在知识库中没有找到相关信息来回答您的问题。"
