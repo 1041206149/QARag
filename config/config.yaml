@@ -22,6 +22,21 @@ retrieval:
   top_k: 5  # 初始检索数量（重排序前）
   similarity_threshold: 0.7
   use_cache: true
+
+  # 查询增强配置
+  query_enhancement:
+    enabled: true  # 是否启用查询增强
+    multi_query:
+      enabled: true  # 是否启用多查询生成
+      num_queries: 3  # 生成的查询数量（包含原始查询）
+
+  # 混合检索配置
+  hybrid_search:
+    enabled: true  # 是否启用混合检索
+    strategy: "weighted"  # weighted, rrf, vector_only, bm25_only
+    vector_weight: 0.7  # 向量检索权重
+    bm25_weight: 0.3  # BM25 检索权重
+
   # 重排序配置
   rerank:
     enabled: true
@@ -38,7 +53,7 @@ llm:
 
 # 日志配置
 logging:
-  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  level: "WARNING"  # DEBUG, INFO, WARNING, ERROR (改为WARNING减少终端输出)
   file: "logs/app.log"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 

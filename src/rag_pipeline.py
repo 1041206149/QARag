@@ -18,6 +18,8 @@ from src.embedding import EmbeddingModel
 from src.retriever import VectorRetriever
 from src.llm_client import LLMClient
 from src.reranker import Reranker
+from src.query_enhancer import MultiQueryRetriever, QueryPreprocessor
+from src.hybrid_retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
 
@@ -57,12 +59,49 @@ class RAGPipeline:
         self.rerank_strategy = rerank_config.get('strategy', 'mmr')
         self.rerank_top_k = rerank_config.get('top_k', 3)
 
+        # 查询增强配置
+        query_enhancement_config = retrieval_config.get('query_enhancement', {})
+        self.query_enhancement_enabled = query_enhancement_config.get('enabled', False)
+        multi_query_config = query_enhancement_config.get('multi_query', {})
+        self.multi_query_enabled = multi_query_config.get('enabled', False)
+        self.num_queries = multi_query_config.get('num_queries', 3)
+
+        # 混合检索配置
+        hybrid_config = retrieval_config.get('hybrid_search', {})
+        self.hybrid_enabled = hybrid_config.get('enabled', False)
+        self.hybrid_strategy = hybrid_config.get('strategy', 'weighted')
+        self.vector_weight = hybrid_config.get('vector_weight', 0.7)
+        self.bm25_weight = hybrid_config.get('bm25_weight', 0.3)
+
         # 初始化组件
         logger.info("正在初始化RAG Pipeline...")
         self.data_loader = QADataLoader(data_path)
         self.embedding_model = EmbeddingModel(embedding_model_name)
         self.retriever = VectorRetriever(embedding_model=self.embedding_model)
         self.llm_client = LLMClient()
+
+        # 初始化查询增强器
+        if self.query_enhancement_enabled and self.multi_query_enabled:
+            self.multi_query_retriever = MultiQueryRetriever(
+                llm_client=self.llm_client,
+                num_queries=self.num_queries
+            )
+            logger.info(f"✅ 多查询生成已启用，生成 {self.num_queries} 个查询变体")
+        else:
+            self.multi_query_retriever = None
+            logger.info("多查询生成未启用")
+
+        # 初始化混合检索器
+        if self.hybrid_enabled:
+            self.hybrid_retriever = HybridRetriever(
+                vector_retriever=self.retriever,
+                vector_weight=self.vector_weight,
+                bm25_weight=self.bm25_weight
+            )
+            logger.info(f"✅ 混合检索已启用，策略: {self.hybrid_strategy}")
+        else:
+            self.hybrid_retriever = None
+            logger.info("混合检索未启用")
 
         # 初始化重排序器
         if self.rerank_enabled:
@@ -90,6 +129,16 @@ class RAGPipeline:
                     self.embedding_model.load_model()
                     # 再加载索引
                     self.retriever.load_index(filename="faiss_index")
+
+                    # 如果启用混合检索，需要构建 BM25 索引
+                    if self.hybrid_enabled and self.hybrid_retriever:
+                        logger.info("混合检索已启用，正在构建 BM25 索引...")
+                        # 加载数据用于构建 BM25 索引
+                        self.data_loader.load_data()
+                        qa_pairs = self.data_loader.preprocess_data()
+                        self.hybrid_retriever.build_bm25_index(qa_pairs)
+                        logger.info("✅ BM25 索引构建完成")
+
                     self._initialized = True
                     logger.info("✅ 从缓存加载向量索引成功")
                     return
@@ -117,6 +166,11 @@ class RAGPipeline:
 
             # 4. 保存索引
             self.retriever.save_index(filename="faiss_index")
+
+            # 5. 如果启用混合检索，构建 BM25 索引
+            if self.hybrid_enabled and self.hybrid_retriever:
+                logger.info("步骤5: 构建 BM25 索引...")
+                self.hybrid_retriever.build_bm25_index(qa_pairs)
 
             self._initialized = True
             logger.info("✅ RAG Pipeline初始化完成")
@@ -146,18 +200,66 @@ class RAGPipeline:
             self.initialize()
 
         try:
-            # 1. 检索相关文档
+            # 1. 查询预处理
+            question = QueryPreprocessor.preprocess(question)
             logger.info(f"正在检索: {question}")
-            k = top_k or self.top_k
-            retrieved_docs = self.retriever.search(question, top_k=k)
 
-            # 过滤低相似度文档
+            # 2. 生成多查询（如果启用）
+            queries = [question]
+            if self.multi_query_enabled and self.multi_query_retriever:
+                logger.info("正在生成查询变体...")
+                queries = self.multi_query_retriever.generate_queries(question)
+                logger.info(f"生成了 {len(queries)} 个查询变体")
+
+            # 3. 检索相关文档
+            k = top_k or self.top_k
+            all_retrieved_docs = []
+
+            for query in queries:
+                # 选择检索器
+                if self.hybrid_enabled and self.hybrid_retriever:
+                    retrieved_docs = self.hybrid_retriever.search(
+                        query=query,
+                        top_k=k,
+                        strategy=self.hybrid_strategy
+                    )
+                else:
+                    retrieved_docs = self.retriever.search(query, top_k=k)
+
+                all_retrieved_docs.extend(retrieved_docs)
+
+            # 4. 合并去重（基于文档ID）
+            unique_docs = {}
+            for doc in all_retrieved_docs:
+                doc_id = doc['qa_pair']['id']
+                if doc_id not in unique_docs:
+                    unique_docs[doc_id] = doc
+                else:
+                    # 保留更高的分数
+                    if self.hybrid_enabled:
+                        if doc.get('hybrid_score', 0) > unique_docs[doc_id].get('hybrid_score', 0):
+                            unique_docs[doc_id] = doc
+                    else:
+                        if doc.get('similarity', 0) > unique_docs[doc_id].get('similarity', 0):
+                            unique_docs[doc_id] = doc
+
+            # 转换回列表并按分数排序
+            merged_docs = list(unique_docs.values())
+            if self.hybrid_enabled:
+                merged_docs.sort(key=lambda x: x.get('hybrid_score', 0), reverse=True)
+            else:
+                merged_docs.sort(key=lambda x: x.get('similarity', 0), reverse=True)
+
+            # 取 Top-K
+            merged_docs = merged_docs[:k]
+
+            # 5. 过滤低相似度文档
             filtered_docs = [
-                doc for doc in retrieved_docs
-                if doc['similarity'] >= self.similarity_threshold
+                doc for doc in merged_docs
+                if doc.get('similarity', 0) >= self.similarity_threshold
             ]
 
-            # 重排序
+            # 6. 重排序
             if self.rerank_enabled and self.reranker and filtered_docs:
                 logger.info(f"正在重排序，策略: {self.rerank_strategy}")
                 filtered_docs = self.reranker.rerank(
@@ -169,31 +271,31 @@ class RAGPipeline:
 
             if not filtered_docs:
                 logger.warning("未找到相似度足够高的文档")
-                if retrieved_docs:
-                    logger.info(
-                        f"最高相似度: {retrieved_docs[0]['similarity']:.4f} (阈值: {self.similarity_threshold})")
+                if merged_docs:
+                    top_score = merged_docs[0].get('similarity', 0) or merged_docs[0].get('hybrid_score', 0)
+                    logger.info(f"最高分数: {top_score:.4f} (阈值: {self.similarity_threshold})")
 
                 return {
                     'answer': "抱歉，我在知识库中没有找到相关信息来回答您的问题。",
                     'context': [],
                     'retrieved_count': 0,
-                    'top_similarity': retrieved_docs[0]['similarity'] if retrieved_docs else 0.0
+                    'top_similarity': top_score if merged_docs else 0.0
                 }
 
             logger.info(f"检索到 {len(filtered_docs)} 个相关文档")
 
-            # 2. 使用LLM生成回答
+            # 7. 使用LLM生成回答
             logger.info("正在生成回答...")
             answer = self.llm_client.generate_with_context(
                 question=question,
                 context=filtered_docs
             )
 
-            # 3. 构建结果
+            # 8. 构建结果
             result = {
                 'answer': answer,
                 'retrieved_count': len(filtered_docs),
-                'top_similarity': filtered_docs[0]['similarity'] if filtered_docs else 0.0
+                'top_similarity': filtered_docs[0].get('similarity', 0) if filtered_docs else 0.0
             }
 
             if return_context:
@@ -225,18 +327,66 @@ class RAGPipeline:
             self.initialize()
 
         try:
-            # 1. 检索相关文档
+            # 1. 查询预处理
+            question = QueryPreprocessor.preprocess(question)
             logger.info(f"正在检索: {question}")
-            k = top_k or self.top_k
-            retrieved_docs = self.retriever.search(question, top_k=k)
 
-            # 过滤低相似度文档
+            # 2. 生成多查询（如果启用）
+            queries = [question]
+            if self.multi_query_enabled and self.multi_query_retriever:
+                logger.info("正在生成查询变体...")
+                queries = self.multi_query_retriever.generate_queries(question)
+                logger.info(f"生成了 {len(queries)} 个查询变体")
+
+            # 3. 检索相关文档
+            k = top_k or self.top_k
+            all_retrieved_docs = []
+
+            for query in queries:
+                # 选择检索器
+                if self.hybrid_enabled and self.hybrid_retriever:
+                    retrieved_docs = self.hybrid_retriever.search(
+                        query=query,
+                        top_k=k,
+                        strategy=self.hybrid_strategy
+                    )
+                else:
+                    retrieved_docs = self.retriever.search(query, top_k=k)
+
+                all_retrieved_docs.extend(retrieved_docs)
+
+            # 4. 合并去重（基于文档ID）
+            unique_docs = {}
+            for doc in all_retrieved_docs:
+                doc_id = doc['qa_pair']['id']
+                if doc_id not in unique_docs:
+                    unique_docs[doc_id] = doc
+                else:
+                    # 保留更高的分数
+                    if self.hybrid_enabled:
+                        if doc.get('hybrid_score', 0) > unique_docs[doc_id].get('hybrid_score', 0):
+                            unique_docs[doc_id] = doc
+                    else:
+                        if doc.get('similarity', 0) > unique_docs[doc_id].get('similarity', 0):
+                            unique_docs[doc_id] = doc
+
+            # 转换回列表并按分数排序
+            merged_docs = list(unique_docs.values())
+            if self.hybrid_enabled:
+                merged_docs.sort(key=lambda x: x.get('hybrid_score', 0), reverse=True)
+            else:
+                merged_docs.sort(key=lambda x: x.get('similarity', 0), reverse=True)
+
+            # 取 Top-K
+            merged_docs = merged_docs[:k]
+
+            # 5. 过滤低相似度文档
             filtered_docs = [
-                doc for doc in retrieved_docs
-                if doc['similarity'] >= self.similarity_threshold
+                doc for doc in merged_docs
+                if doc.get('similarity', 0) >= self.similarity_threshold
             ]
 
-            # 重排序
+            # 6. 重排序
             if self.rerank_enabled and self.reranker and filtered_docs:
                 logger.info(f"正在重排序，策略: {self.rerank_strategy}")
                 filtered_docs = self.reranker.rerank(
@@ -251,11 +401,11 @@ class RAGPipeline:
 
             logger.info(f"检索到 {len(filtered_docs)} 个相关文档")
 
-            # 2. 构建上下文和 Prompt
+            # 7. 构建上下文和 Prompt
             context_text = self.llm_client._format_context(filtered_docs)
             prompt = self.llm_client._build_rag_prompt(question, context_text)
 
-            # 3. 流式生成
+            # 8. 流式生成
             logger.info("正在生成回答（流式）...")
             for chunk in self.llm_client.generate_stream(
                 prompt=prompt,
